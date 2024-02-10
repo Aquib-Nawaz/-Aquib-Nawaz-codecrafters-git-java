@@ -38,7 +38,8 @@ public class BlobObject extends GitObjects{
 
             char [] fileContent = new char[fileSize];
 //            All the data read matches the size
-            assert fileSize == bufferedReader.read(fileContent, 0, fileSize);
+            readLen = bufferedReader.read(fileContent, 0, fileSize);
+            assert readLen == fileSize;
             System.out.print(fileContent);
 //            End of file reached
             assert bufferedReader.read() == -1;
