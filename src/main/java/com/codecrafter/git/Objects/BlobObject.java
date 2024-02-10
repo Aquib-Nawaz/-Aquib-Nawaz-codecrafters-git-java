@@ -1,6 +1,7 @@
 package com.codecrafter.git.Objects;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -17,7 +18,7 @@ public class BlobObject extends GitObjects{
     public void readObject() {
         try {
             super.readObject(type);
-            System.out.print(fileContent);
+            System.out.print(new String(fileContent));
         }
         catch (Exception e){
             System.out.println(String.format("Blob Read Exception:- %s", e.getMessage()));

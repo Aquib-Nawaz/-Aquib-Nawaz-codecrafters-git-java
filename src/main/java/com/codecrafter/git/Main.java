@@ -2,6 +2,7 @@ package com.codecrafter.git;
 
 import com.codecrafter.git.Objects.BlobObject;
 import com.codecrafter.git.Objects.GitObjects;
+import com.codecrafter.git.Objects.TreeObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -58,6 +59,21 @@ public class Main {
     }
 
   }
+
+  static private void git_tree(String [] args){
+      if(args.length<3)
+          return;
+      GitObjects object;
+      try {
+          if(args[1].equals("--name-only")){
+              object= new TreeObject(".", args[2]);
+              object.readObject();
+          }
+      }
+      catch (FileNotFoundException f){
+          System.out.println(String.format("Object Not Found:- %s", args[2]));
+      }
+  }
   public static void main(String[] args){
     // You can use print statements as follows for debugging, they'll be visible when running tests.
 //    System.out.println("Logs from your program will appear here!");
@@ -73,6 +89,7 @@ public class Main {
        case "init" -> git_init();
        case "cat-file" -> git_read(args);
        case "hash-object" -> git_write(args);
+       case "ls-tree" -> git_tree(args);
        default -> System.out.println("Unknown command: " + command);
      }
   }

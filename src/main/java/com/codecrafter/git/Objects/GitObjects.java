@@ -13,7 +13,7 @@ import java.util.Formatter;
 
 public abstract class GitObjects {
     protected Path file;
-    protected char [] fileContent;
+    protected byte [] fileContent;
     public GitObjects(String repo, String hash) throws FileNotFoundException {
 
         int length = hash.length();
@@ -74,9 +74,9 @@ public abstract class GitObjects {
             assert(space==(int)' ');
 
             int fileSize = charArrayToInt(bufferedReader);
-            fileContent = new char[fileSize];
+            fileContent = new byte[fileSize];
 //            All the data read matches the size
-            readLen = new InputStreamReader(bufferedReader).read(fileContent, 0, fileSize);
+            readLen = bufferedReader.read(fileContent, 0, fileSize);
             assert readLen == fileSize;
 //            End of file reached
             assert bufferedReader.read() == -1;
@@ -104,7 +104,7 @@ public abstract class GitObjects {
 
     protected String writeObject(Path fileName, byte [] typeFrom) throws IOException{
 
-        byte [] fileContent = Files.readAllBytes(fileName);
+        fileContent = Files.readAllBytes(fileName);
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         buffer.write(typeFrom);
