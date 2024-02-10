@@ -105,17 +105,14 @@ public abstract class GitObjects {
     protected String writeObject(Path fileName, byte [] typeFrom) throws IOException{
 
         byte [] fileContent = Files.readAllBytes(fileName);
-        int fileSize = fileContent.length;
-        byte [] len = intToByteArray(fileSize);
-        int objLen = typeFrom.length + 1 + len.length + 1 + fileSize;
-        byte [] obj = new byte[objLen];
 
-        System.arraycopy(typeFrom, 0, obj, 0, typeFrom.length);
-        obj[typeFrom.length] = (byte)' ';
-        System.arraycopy(len, 0, obj, typeFrom.length+1, len.length);
-        obj[typeFrom.length + 1 + len.length] = (byte)0;
-        System.arraycopy(fileContent, 0, obj, typeFrom.length+2+ len.length, fileSize);
-
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        buffer.write(typeFrom);
+        buffer.write(" ".getBytes());
+        buffer.write(String.valueOf(fileContent.length).getBytes());
+        buffer.write(0);
+        buffer.write(fileContent);
+        byte [] obj = buffer.toByteArray();
         String sha;
         try {
             sha = SHAsum(obj);
@@ -127,16 +124,10 @@ public abstract class GitObjects {
         if (tmp != null) // null will be returned if the path has no parent
             Files.createDirectories(tmp);
         Files.createFile(file);
-
-        try(OutputStream stream = Files.newOutputStream(file)){
-            OutputStream deflater = new DeflaterOutputStream(stream);
-            deflater.write(obj);
-            deflater.flush();
-        }
-        catch (IOException e){
-            Files.delete(file);
-            throw e;
-        }
+//        System.out.println(String.valueOf(obj));
+        DeflaterOutputStream out = new DeflaterOutputStream(new FileOutputStream(file.toFile()));
+        out.write(obj);
+        out.close();
         return sha;
 
     }
