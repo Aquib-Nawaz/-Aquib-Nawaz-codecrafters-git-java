@@ -89,9 +89,9 @@ public abstract class GitObjects {
         }
     }
 
-    public static String SHAsum(byte[] convertme) throws NoSuchAlgorithmException{
+    public static byte[] SHAsum(byte[] convertme) throws NoSuchAlgorithmException{
         MessageDigest md = MessageDigest.getInstance("SHA-1");
-        return byteArray2Hex(md.digest(convertme));
+        return md.digest(convertme);
     }
 
     public static String byteArray2Hex(final byte[] hash) {
@@ -102,7 +102,7 @@ public abstract class GitObjects {
         return formatter.toString();
     }
 
-    protected String writeObject(Path fileName, byte [] typeFrom) throws IOException{
+    protected byte[] writeObject(Path fileName, byte [] typeFrom) throws IOException{
 
         fileContent = Files.readAllBytes(fileName);
 
@@ -113,13 +113,14 @@ public abstract class GitObjects {
         buffer.write(0);
         buffer.write(fileContent);
         byte [] obj = buffer.toByteArray();
-        String sha;
+        byte[] sha;
         try {
             sha = SHAsum(obj);
         }
-        catch (NoSuchAlgorithmException e){return "";}
+        catch (NoSuchAlgorithmException e){return new byte[0];}
+        String strSha = byteArray2Hex(sha);
         file = Path.of(".git", "objects",
-                sha.substring(0,2),sha.substring(2));
+                strSha.substring(0,2),strSha.substring(2));
         final Path tmp = file.getParent();
         if (tmp != null) // null will be returned if the path has no parent
             Files.createDirectories(tmp);
@@ -132,7 +133,7 @@ public abstract class GitObjects {
 
     }
     public abstract void readObject();
-    public abstract String writeObject(String filename);
+    public abstract byte[] writeObject(String filename);
 
 
 }

@@ -51,7 +51,9 @@ public class Main {
     try {
         if(args[1].equals("-w")){
             object= new BlobObject(".","" );
-            System.out.print(object.writeObject(args[2]));
+            System.out.print(
+                    GitObjects.byteArray2Hex(object.writeObject(args[2]))
+            );
         }
     }
     catch (FileNotFoundException f){

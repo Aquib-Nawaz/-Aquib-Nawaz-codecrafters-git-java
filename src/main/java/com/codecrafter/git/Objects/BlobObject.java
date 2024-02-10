@@ -1,11 +1,7 @@
 package com.codecrafter.git.Objects;
 
 import java.io.*;
-import java.lang.reflect.Array;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.zip.InflaterInputStream;
 
 public class BlobObject extends GitObjects{
 
@@ -27,8 +23,8 @@ public class BlobObject extends GitObjects{
     }
 
     @Override
-    public String writeObject(String filename) {
-        String hash="";
+    public byte[] writeObject(String filename) {
+        byte[] hash = {};
         try {
             hash = super.writeObject(Path.of(filename),type);
         }

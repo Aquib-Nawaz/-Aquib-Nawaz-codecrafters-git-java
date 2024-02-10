@@ -61,7 +61,7 @@ public class TreeObject extends GitObjects{
     }
 
     @Override
-    public String writeObject(String filename) {
+    public byte[] writeObject(String filename) {
         return null;
     }
 }
