@@ -4,6 +4,7 @@ import com.codecrafter.git.Objects.BlobObject;
 import com.codecrafter.git.Objects.GitObjects;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 
@@ -30,10 +31,32 @@ public class Main {
     if(args.length<3)
       return;
     GitObjects object;
-    if(args[1].equals("-p")){
-       object= new BlobObject(".", args[2]);
-       object.readObject();
+    try {
+        if(args[1].equals("-p")){
+            object= new BlobObject(".", args[2]);
+            object.readObject();
+        }
     }
+    catch (FileNotFoundException f){
+        System.out.println(String.format("Object Not Found:- %s", args[2]));
+    }
+
+  }
+
+  static private void git_write(String[] args){
+    if(args.length<3)
+      return;
+    GitObjects object;
+    try {
+        if(args[1].equals("-w")){
+            object= new BlobObject(".","" );
+            System.out.print(object.writeObject(args[2]));
+        }
+    }
+    catch (FileNotFoundException f){
+        System.out.println(String.format("Object Not Found:- %s", args[2]));
+    }
+
   }
   public static void main(String[] args){
     // You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -49,6 +72,7 @@ public class Main {
      switch (command) {
        case "init" -> git_init();
        case "cat-file" -> git_read(args);
+       case "hash-object" -> git_write(args);
        default -> System.out.println("Unknown command: " + command);
      }
   }
