@@ -1,7 +1,12 @@
 package com.codecrafter.git.Objects;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
+import java.util.stream.Stream;
+import java.nio.file.Path;
 
 class TreeLeaf {
     public String mode,name,sha;
@@ -62,6 +67,40 @@ public class TreeObject extends GitObjects{
 
     @Override
     public byte[] writeObject(String filename) {
-        return null;
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte [] sha = new byte[1];
+        try(Stream<Path> fileStream  = Files.list(Path.of(filename))){
+//            buffer.write();
+            fileStream.
+                    filter(e->!e.getFileName().toString().equals(".git"))
+                    .sorted(Path::compareTo).forEach(p->{
+                        String fileName = p.getFileName().toString();
+//                        System.out.printf("Parsing :- %s\n", fileName);
+                        GitObjects child;
+                        try {
+                            if(Files.isDirectory(p)){
+                                child = new TreeObject(".", "");
+                                buffer.write("040000".getBytes());
+                            }
+                            else{
+                                buffer.write("100644".getBytes());
+                                child = new BlobObject(".", "");
+                            }
+                            buffer.write(" ".getBytes());
+                            buffer.write(fileName.getBytes());
+                            byte[] childSha = child.writeObject(p.toString());
+                            buffer.write(0);
+                            buffer.write(childSha);
+                        }
+                        catch (IOException f){}
+
+                    });
+            fileContent = buffer.toByteArray();
+            sha = super.writeObject(type);
+        }
+        catch (IOException e){
+            System.out.printf("Tree Write Exception for dir %s\n", filename);
+        }
+        return sha;
     }
 }

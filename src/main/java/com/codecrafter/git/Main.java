@@ -62,7 +62,7 @@ public class Main {
 
   }
 
-  static private void git_tree(String [] args){
+  static private void git_read_tree(String [] args){
       if(args.length<3)
           return;
       GitObjects object;
@@ -74,6 +74,17 @@ public class Main {
       }
       catch (FileNotFoundException f){
           System.out.println(String.format("Object Not Found:- %s", args[2]));
+      }
+  }
+
+  static private void git_write_tree(){
+      GitObjects object;
+      try {
+          object= new TreeObject(".", "");
+          System.out.print(GitObjects.byteArray2Hex(object.writeObject(".")));
+      }
+      catch (Exception f){
+          System.out.println(String.format("%s", f.getMessage()));
       }
   }
   public static void main(String[] args){
@@ -91,7 +102,8 @@ public class Main {
        case "init" -> git_init();
        case "cat-file" -> git_read(args);
        case "hash-object" -> git_write(args);
-       case "ls-tree" -> git_tree(args);
+       case "ls-tree" -> git_read_tree(args);
+       case "write-tree" -> git_write_tree();
        default -> System.out.println("Unknown command: " + command);
      }
   }

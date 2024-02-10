@@ -1,6 +1,7 @@
 package com.codecrafter.git.Objects;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class BlobObject extends GitObjects{
@@ -26,7 +27,8 @@ public class BlobObject extends GitObjects{
     public byte[] writeObject(String filename) {
         byte[] hash = {};
         try {
-            hash = super.writeObject(Path.of(filename),type);
+            fileContent = Files.readAllBytes(Path.of(filename));
+            hash = super.writeObject(type);
         }
         catch (IOException e){
             System.out.println(String.format("Blob Write Exception:- %s", e.getMessage()));

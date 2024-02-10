@@ -102,9 +102,7 @@ public abstract class GitObjects {
         return formatter.toString();
     }
 
-    protected byte[] writeObject(Path fileName, byte [] typeFrom) throws IOException{
-
-        fileContent = Files.readAllBytes(fileName);
+    protected byte[] writeObject(byte [] typeFrom) throws IOException{
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         buffer.write(typeFrom);
