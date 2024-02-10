@@ -35,7 +35,9 @@ public class TreeObject extends GitObjects{
         idx += valueLen+1;
 
         valueLen = 20;
-        ret.sha = new String(fileContent, idx, valueLen);
+        byte[] sha = new byte[20];
+        System.arraycopy(fileContent, idx, sha, 0, valueLen);
+        ret.sha = byteArray2Hex(sha);
         idx += valueLen;
 
         ret.idx = idx;

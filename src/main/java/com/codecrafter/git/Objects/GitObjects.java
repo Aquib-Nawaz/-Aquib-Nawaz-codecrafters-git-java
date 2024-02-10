@@ -94,7 +94,7 @@ public abstract class GitObjects {
         return byteArray2Hex(md.digest(convertme));
     }
 
-    private static String byteArray2Hex(final byte[] hash) {
+    public static String byteArray2Hex(final byte[] hash) {
         Formatter formatter = new Formatter();
         for (byte b : hash) {
             formatter.format("%02x", b);
