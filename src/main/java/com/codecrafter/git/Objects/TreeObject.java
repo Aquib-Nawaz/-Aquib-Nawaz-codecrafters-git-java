@@ -80,7 +80,7 @@ public class TreeObject extends GitObjects{
                         try {
                             if(Files.isDirectory(p)){
                                 child = new TreeObject(".", "");
-                                buffer.write("040000".getBytes());
+                                buffer.write("40000".getBytes());
                             }
                             else{
                                 buffer.write("100644".getBytes());
