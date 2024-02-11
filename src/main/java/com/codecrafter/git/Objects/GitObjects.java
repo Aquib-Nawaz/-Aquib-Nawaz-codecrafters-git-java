@@ -119,6 +119,10 @@ public abstract class GitObjects {
         String strSha = byteArray2Hex(sha);
         file = Path.of(".git", "objects",
                 strSha.substring(0,2),strSha.substring(2));
+
+        if(Files.exists(file))
+            return sha; //No need to write
+
         final Path tmp = file.getParent();
         if (tmp != null) // null will be returned if the path has no parent
             Files.createDirectories(tmp);

@@ -4,11 +4,17 @@ import com.codecrafter.git.Objects.BlobObject;
 import com.codecrafter.git.Objects.CommitObject;
 import com.codecrafter.git.Objects.GitObjects;
 import com.codecrafter.git.Objects.TreeObject;
+import com.codecrafter.git.clone.PktLine;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
@@ -29,7 +35,7 @@ public class Main {
 
   }
 
-  static private void git_read(String[] args){
+  static private void git_read_object(String[] args){
     if(args.length<3)
       return;
     GitObjects object;
@@ -45,7 +51,7 @@ public class Main {
 
   }
 
-  static private void git_write(String[] args){
+  static private void git_write_object(String[] args){
     if(args.length<3)
       return;
     GitObjects object;
@@ -102,6 +108,73 @@ public class Main {
           System.out.println(String.format("%s", f.getMessage()));
       }
   }
+
+private static void git_clone(String[] args) {
+    try {
+        URL url = new URI(args[1] + "/info/refs?service=git-upload-pack").toURL();
+
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("Accept", "application/x-git-upload-pack-advertisement");
+
+        int status = con.getResponseCode();
+
+        if(status != 200)
+            throw new Exception("Bad Response");
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+
+        String header = PktLine.deserialize(in);
+        assert header.equals("# service=git_upload_pack");
+        PktLine.deserialize(in);
+
+        String capabilities = PktLine.deserialize(in);
+
+        String ref;
+        List<String> refs= new ArrayList<>();
+        while((ref=PktLine.deserialize(in))!=""){
+            refs.add(ref.substring(0,40));
+        }
+        in.close();
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        os.write("0011command=fetch0016object-format=sha10001".getBytes());
+        refs.forEach(re->
+        {
+            try {
+                String serialised = PktLine.serialize("want "+re);
+                os.write(serialised.
+                        getBytes());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        os.write("0009done\n0000".getBytes());
+        byte [] result = sendWantRequest(args[1], os.toByteArray());
+        System.out.println(result.length);
+        System.out.print(new String(result));
+//        System.out.print();
+    }
+    catch (Exception f){
+        System.out.println(String.format("CloneException:- %s", f.getMessage()));
+    }
+}
+
+private static byte[] sendWantRequest(String repo_url, byte[] write_buffer) throws IOException {
+    URL url = new URL(repo_url + "/git-upload-pack");
+    HttpURLConnection postHttpURLConnection = (HttpURLConnection) url.openConnection();
+    postHttpURLConnection.setDoOutput(true);
+    postHttpURLConnection.setRequestMethod("POST");
+    postHttpURLConnection.setRequestProperty("Content-Type", "application/x-git-upload-pack-request");
+    postHttpURLConnection.setRequestProperty("Git-Protocol", "version=2");
+    try (DataOutputStream outputStream = new DataOutputStream(postHttpURLConnection.getOutputStream())) {
+        outputStream.write(write_buffer);
+    }
+
+    InputStream inputStream = new BufferedInputStream(postHttpURLConnection.getInputStream());
+    return inputStream.readAllBytes();
+}
+
   public static void main(String[] args){
     // You can use print statements as follows for debugging, they'll be visible when running tests.
 //    System.out.println("Logs from your program will appear here!");
@@ -115,12 +188,14 @@ public class Main {
 
      switch (command) {
        case "init" -> git_init();
-       case "cat-file" -> git_read(args);
-       case "hash-object" -> git_write(args);
+       case "cat-file" -> git_read_object(args);
+       case "hash-object" -> git_write_object(args);
        case "ls-tree" -> git_read_tree(args);
        case "write-tree" -> git_write_tree();
        case "commit-tree" -> git_commit(args);
+       case "clone" -> git_clone(args);
        default -> System.out.println("Unknown command: " + command);
      }
   }
+
 }
