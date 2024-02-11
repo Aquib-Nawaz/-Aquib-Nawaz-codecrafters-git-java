@@ -68,7 +68,7 @@ public class TreeObject extends GitObjects{
     @Override
     public byte[] writeObject(String filename) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        byte [] sha = new byte[1];
+        byte [] sha = new byte[0];
         try(Stream<Path> fileStream  = Files.list(Path.of(filename))){
 //            buffer.write();
             fileStream.

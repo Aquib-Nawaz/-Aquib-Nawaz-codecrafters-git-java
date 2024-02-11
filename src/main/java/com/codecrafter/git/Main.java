@@ -1,6 +1,7 @@
 package com.codecrafter.git;
 
 import com.codecrafter.git.Objects.BlobObject;
+import com.codecrafter.git.Objects.CommitObject;
 import com.codecrafter.git.Objects.GitObjects;
 import com.codecrafter.git.Objects.TreeObject;
 
@@ -87,6 +88,20 @@ public class Main {
           System.out.println(String.format("%s", f.getMessage()));
       }
   }
+
+  static private void git_commit(String[] args){
+      if(args.length<6)
+          return;
+
+      GitObjects object;
+      try {
+          object= new CommitObject(".", "", args[1], args[3], args[5]);
+          System.out.print(GitObjects.byteArray2Hex(object.writeObject(".")));
+      }
+      catch (Exception f){
+          System.out.println(String.format("%s", f.getMessage()));
+      }
+  }
   public static void main(String[] args){
     // You can use print statements as follows for debugging, they'll be visible when running tests.
 //    System.out.println("Logs from your program will appear here!");
@@ -104,6 +119,7 @@ public class Main {
        case "hash-object" -> git_write(args);
        case "ls-tree" -> git_read_tree(args);
        case "write-tree" -> git_write_tree();
+       case "commit-tree" -> git_commit(args);
        default -> System.out.println("Unknown command: " + command);
      }
   }
