@@ -1,6 +1,7 @@
 package com.codecrafter.git.clone;
 
 import com.codecrafter.git.Objects.BlobObject;
+import com.codecrafter.git.Objects.CommitObject;
 import com.codecrafter.git.Objects.TreeLeaf;
 import com.codecrafter.git.Objects.TreeObject;
 
@@ -53,7 +54,10 @@ public class CloneCommand {
             //Objects files are written only populating the real directory is remaining
 
             for (String nRef:refs){
-                TreeObject tree = new TreeObject(repo, nRef);
+                CommitObject commitObject = new CommitObject(repo, nRef);
+                String treeHash = commitObject.getTree();
+
+                TreeObject tree = new TreeObject(repo, treeHash);
                 checkOut(tree, Path.of(repo));
             }
         }

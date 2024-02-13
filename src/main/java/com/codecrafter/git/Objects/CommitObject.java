@@ -27,7 +27,11 @@ public class CommitObject extends GitObjects{
     }
     @Override
     public void readObject() {
+    }
 
+    public String getTree() {
+        super.readObjectFromHash();
+        return new String(fileContent, 5, 40);
     }
 
     @Override

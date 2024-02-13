@@ -145,7 +145,7 @@ private static InputStream sendWantRequest(String repo_url, byte[] write_buffer)
        case "ls-tree" -> git_read_tree(args);
        case "write-tree" -> git_write_tree();
        case "commit-tree" -> git_commit(args);
-       case "clone" -> git_clone(args);
+       case "clone" -> {git_init(args[2]);git_clone(args);}
        default -> System.out.println("Unknown command: " + command);
      }
   }
