@@ -14,14 +14,18 @@ import java.util.Formatter;
 public abstract class GitObjects {
     protected Path file;
     protected byte [] fileContent;
-    public GitObjects(String repo, String hash) throws FileNotFoundException {
 
+    protected byte [] type;
+    protected String repo;
+    public GitObjects(String _repo, String hash) throws FileNotFoundException {
+
+        repo = _repo;
         int length = hash.length();
         if(length!=0){
             assert (length>2);
             file = Path.of(repo, ".git", "objects" ,hash.substring(0,2), hash.substring(2,length));
             if(!Files.exists(file)){
-               throw new FileNotFoundException();
+               throw new FileNotFoundException(file.toString());
             }
         }
 
@@ -55,7 +59,9 @@ public abstract class GitObjects {
         }
         return ret;
     }
-    protected void readObject(byte [] typeFrom){
+
+
+    public void readObjectFromHash(){
         try(InputStream stream = Files.newInputStream(file)) {
 
             InflaterInputStream inflatedStream = new InflaterInputStream(stream);
@@ -63,15 +69,21 @@ public abstract class GitObjects {
             BufferedInputStream bufferedReader = new BufferedInputStream(inflatedStream);
 
             int readLen;
-
-            byte [] type = new byte[typeFrom.length];
-            readLen = bufferedReader.read(type, 0, typeFrom.length);
-
-            assert (readLen == typeFrom.length);
-            assert (Arrays.equals(type,typeFrom));
-
-            int space = bufferedReader.read();
-            assert(space==(int)' ');
+            byte [] _type;
+            try(ByteArrayOutputStream os = new ByteArrayOutputStream()){
+                int val = bufferedReader.read();
+                while(val!=(int)' '){
+                    os.write(val);
+                    val = bufferedReader.read();
+                }
+                _type = os.toByteArray();
+            }
+            readLen = _type.length;
+            if(!Arrays.equals(this.type, "delta".getBytes())){
+                assert (readLen == this.type.length);
+                assert (Arrays.equals(_type,this.type));
+            }
+            else{ this.type = _type;}
 
             int fileSize = charArrayToInt(bufferedReader);
             fileContent = new byte[fileSize];
@@ -102,13 +114,11 @@ public abstract class GitObjects {
         return formatter.toString();
     }
 
-    protected byte[] writeObject(byte [] typeFrom) throws IOException{
+    public byte[] writeObject() throws IOException{
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        buffer.write(typeFrom);
-        buffer.write(" ".getBytes());
-        buffer.write(String.valueOf(fileContent.length).getBytes());
-        buffer.write(0);
+        buffer.write(type);
+        buffer.write(String.format(" %d\0", fileContent.length).getBytes());
         buffer.write(fileContent);
         byte [] obj = buffer.toByteArray();
         byte[] sha;
@@ -117,7 +127,7 @@ public abstract class GitObjects {
         }
         catch (NoSuchAlgorithmException e){return new byte[0];}
         String strSha = byteArray2Hex(sha);
-        file = Path.of(".git", "objects",
+        file = Path.of(repo, ".git", "objects",
                 strSha.substring(0,2),strSha.substring(2));
 
         if(Files.exists(file))
@@ -134,7 +144,27 @@ public abstract class GitObjects {
         return sha;
 
     }
+
+    public void setFileContent(byte[] fileContent){
+        this.fileContent = fileContent;
+    }
+
+    public byte[] getFileContent(){
+        return fileContent;
+    }
+
+    public void setFile(String hash) throws FileNotFoundException {
+        file = Path.of(repo, ".git", "objects" ,hash.substring(0,2), hash.substring(2));
+        if(!Files.exists(file)){
+            throw new FileNotFoundException(file.toString());
+        }
+    }
+
+    //Read the object from file given via hash during construction
     public abstract void readObject();
+
+    //write the object in file name in a hash-object format
+    //file content is set via setFileContent
     public abstract byte[] writeObject(String filename);
 
 

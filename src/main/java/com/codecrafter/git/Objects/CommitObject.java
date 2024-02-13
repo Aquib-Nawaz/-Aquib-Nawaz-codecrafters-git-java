@@ -11,21 +11,20 @@ public class CommitObject extends GitObjects{
 
     private String parent;
     private String message;
-    private String authorName;
-    private String authorMail;
+    private String authorName = "Aquib Nawaz";
+    private final String authorMail = "random@gmail.com";;
     private String tree;
 
-    private byte[] type;
-    public CommitObject(String repo, String hash, String tree, String parentCommit, String message) throws FileNotFoundException {
+    public CommitObject(String repo, String hash) throws FileNotFoundException {
         super(repo, hash);
-        parent = parentCommit;
-        this.message = message;
-        this.tree = tree;
-        authorMail = "aquibnawaz78692@gmail.com";
-        authorName = "Aquib Nawaz";
         type = "commit".getBytes();
     }
 
+    public void setCommitData( String tree, String parentCommit, String message){
+        parent = parentCommit;
+        this.message = message;
+        this.tree = tree;
+    }
     @Override
     public void readObject() {
 
@@ -56,7 +55,7 @@ public class CommitObject extends GitObjects{
             buffer.write(line.getBytes());
 
             fileContent = buffer.toByteArray();
-            sha = super.writeObject(type);
+            sha = super.writeObject();
 //            System.out.println(o.toString());
 
         }catch (IOException e){}

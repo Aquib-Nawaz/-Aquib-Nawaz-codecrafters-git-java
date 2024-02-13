@@ -8,16 +8,11 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.nio.file.Path;
 
-class TreeLeaf {
-    public String mode,name,sha;
-    int idx;
-
-}
 public class TreeObject extends GitObjects{
-    byte [] type = {'t', 'r', 'e', 'e'};
 
     public TreeObject(String repo, String hash) throws FileNotFoundException {
         super(repo, hash);
+        type = new byte[]{'t', 'r', 'e', 'e'};
     }
 
     private TreeLeaf readTreeLeaf(int idx){
@@ -49,20 +44,23 @@ public class TreeObject extends GitObjects{
         return ret;
     }
 
-    @Override
-    public void readObject() {
-        super.readObject(type);
+    public Set<TreeLeaf> getEntries(){
+        super.readObjectFromHash();
 //        [mode name020]
         int cur = 0;
-        Set<String> names = new TreeSet<>();
+        Set<TreeLeaf> leaves = new TreeSet<>();
         while(cur!=fileContent.length) {
             TreeLeaf ret = readTreeLeaf(cur);
             cur = ret.idx;
-            names.add(ret.name);
+            leaves.add(ret);
         }
-
-        for(String name:names)
-            System.out.println(name);
+        return leaves;
+    }
+    @Override
+    public void readObject() {
+        Set<TreeLeaf>leaves = getEntries();
+        for(TreeLeaf leaf:leaves)
+            System.out.println(leaf.name);
     }
 
     @Override
@@ -96,7 +94,7 @@ public class TreeObject extends GitObjects{
 
                     });
             fileContent = buffer.toByteArray();
-            sha = super.writeObject(type);
+            sha = super.writeObject();
         }
         catch (IOException e){
             System.out.printf("Tree Write Exception for dir %s\n", filename);

@@ -4,23 +4,22 @@ import com.codecrafter.git.Objects.BlobObject;
 import com.codecrafter.git.Objects.CommitObject;
 import com.codecrafter.git.Objects.GitObjects;
 import com.codecrafter.git.Objects.TreeObject;
-import com.codecrafter.git.clone.PktLine;
+import com.codecrafter.git.clone.CloneCommand;
+import com.codecrafter.git.clone.PktFile;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
 
-  static private void git_init(){
+  static private void git_init(String repo){
 
-    final File root = new File(".git");
+    final File root = new File(repo, ".git");
     new File(root, "objects").mkdirs();
     new File(root, "refs").mkdirs();
     final File head = new File(root, "HEAD");
@@ -99,9 +98,10 @@ public class Main {
       if(args.length<6)
           return;
 
-      GitObjects object;
+      CommitObject object;
       try {
-          object= new CommitObject(".", "", args[1], args[3], args[5]);
+          object= new CommitObject(".", "");
+          object.setCommitData(args[1], args[3], args[5]);
           System.out.print(GitObjects.byteArray2Hex(object.writeObject(".")));
       }
       catch (Exception f){
@@ -110,57 +110,10 @@ public class Main {
   }
 
 private static void git_clone(String[] args) {
-    try {
-        URL url = new URI(args[1] + "/info/refs?service=git-upload-pack").toURL();
-
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.setRequestProperty("Accept", "application/x-git-upload-pack-advertisement");
-
-        int status = con.getResponseCode();
-
-        if(status != 200)
-            throw new Exception("Bad Response");
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
-
-        String header = PktLine.deserialize(in);
-        assert header.equals("# service=git_upload_pack");
-        PktLine.deserialize(in);
-
-        String capabilities = PktLine.deserialize(in);
-
-        String ref;
-        List<String> refs= new ArrayList<>();
-        while((ref=PktLine.deserialize(in))!=""){
-            refs.add(ref.substring(0,40));
-        }
-        in.close();
-
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        os.write("0011command=fetch0016object-format=sha10001".getBytes());
-        refs.forEach(re->
-        {
-            try {
-                String serialised = PktLine.serialize("want "+re);
-                os.write(serialised.
-                        getBytes());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        os.write("0009done\n0000".getBytes());
-        byte [] result = sendWantRequest(args[1], os.toByteArray());
-        System.out.println(result.length);
-        System.out.print(new String(result));
-//        System.out.print();
-    }
-    catch (Exception f){
-        System.out.println(String.format("CloneException:- %s", f.getMessage()));
-    }
+    CloneCommand.git_clone(args);
 }
 
-private static byte[] sendWantRequest(String repo_url, byte[] write_buffer) throws IOException {
+private static InputStream sendWantRequest(String repo_url, byte[] write_buffer) throws IOException {
     URL url = new URL(repo_url + "/git-upload-pack");
     HttpURLConnection postHttpURLConnection = (HttpURLConnection) url.openConnection();
     postHttpURLConnection.setDoOutput(true);
@@ -171,8 +124,7 @@ private static byte[] sendWantRequest(String repo_url, byte[] write_buffer) thro
         outputStream.write(write_buffer);
     }
 
-    InputStream inputStream = new BufferedInputStream(postHttpURLConnection.getInputStream());
-    return inputStream.readAllBytes();
+    return new BufferedInputStream(postHttpURLConnection.getInputStream());
 }
 
   public static void main(String[] args){
@@ -187,7 +139,7 @@ private static byte[] sendWantRequest(String repo_url, byte[] write_buffer) thro
      final String command = args[0];
 
      switch (command) {
-       case "init" -> git_init();
+       case "init" -> git_init(".");
        case "cat-file" -> git_read_object(args);
        case "hash-object" -> git_write_object(args);
        case "ls-tree" -> git_read_tree(args);

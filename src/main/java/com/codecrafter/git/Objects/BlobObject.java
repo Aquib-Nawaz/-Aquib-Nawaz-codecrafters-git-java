@@ -6,15 +6,15 @@ import java.nio.file.Path;
 
 public class BlobObject extends GitObjects{
 
-    byte [] type = {'b', 'l', 'o', 'b'};
     public BlobObject(String repo, String hash)throws FileNotFoundException {
         super(repo, hash);
+        type = new byte[]{'b', 'l', 'o', 'b'};
     }
 
     @Override
     public void readObject() {
         try {
-            super.readObject(type);
+            super.readObjectFromHash();
             System.out.print(new String(fileContent));
         }
         catch (Exception e){
@@ -28,7 +28,7 @@ public class BlobObject extends GitObjects{
         byte[] hash = {};
         try {
             fileContent = Files.readAllBytes(Path.of(filename));
-            hash = super.writeObject(type);
+            hash = super.writeObject();
         }
         catch (IOException e){
             System.out.println(String.format("Blob Write Exception:- %s", e.getMessage()));
