@@ -115,7 +115,7 @@ public abstract class GitObjects {
     }
 
     public byte[] writeObject() throws IOException{
-        System.out.printf("Writing Object of type %s\n%s", new String(type), new String(fileContent));
+//        System.out.printf("Writing Object of type %s\n%s", new String(type), new String(fileContent));
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         buffer.write(type);
         buffer.write(String.format(" %d\0", fileContent.length).getBytes());
