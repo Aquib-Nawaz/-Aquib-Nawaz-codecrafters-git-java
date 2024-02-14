@@ -71,7 +71,7 @@ public class DeltaParser {
                 obj = parseCopyInstructionLengths(instruction>>COPY_OFFSET_BIT_LEN, COPY_SIZE_BIT_LEN, fileContent, fileOffset);
                 fileOffset += obj.offset;
                 copySize = obj.len;
-                instructionObj = new DeltaInstruction(2, (int)copySize, fileOffset, null);
+                instructionObj = new DeltaInstruction(2, (int)copySize, (int)srcOffset, null);
 //                System.out.printf("Copying %d bytes from offset %d\n", copySize, srcOffset);
             }
 

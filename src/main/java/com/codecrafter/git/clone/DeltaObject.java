@@ -49,6 +49,7 @@ public class DeltaObject extends GitObjects {
                 instruction.setFileData(fileContent);
                 os.write(instruction.getContent());
             }
+            fileContent = os.toByteArray();
             return writeObject();
         }
         catch (IOException e){}

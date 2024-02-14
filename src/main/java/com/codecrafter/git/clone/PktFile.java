@@ -78,12 +78,12 @@ public class PktFile {
         int type = ( first>>4&7);
         int msb = first>>7;
         long len = first&15;
-        System.out.printf("New Object:- %d ", first);
+//        System.out.printf("New Object:- %d ", first);
         int iter = 0;
 
         while(msb!=0){
             byte val = in[offset++];
-            System.out.printf("%d ", val);
+//            System.out.printf("%d ", val);
             msb = val >> 7;
             len += (long)(val&127)<<(4 + iter*7);
             iter++;
