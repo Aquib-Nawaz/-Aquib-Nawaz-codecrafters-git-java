@@ -11,10 +11,8 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.zip.DeflaterOutputStream;
 
 public class CloneCommand {
 
@@ -43,8 +41,13 @@ public class CloneCommand {
 
             String ref;
             List<String> refs= new ArrayList<>();
+
+            HashMap<String, String> refsHashMap = new HashMap<>();
+
             while((ref = PktFile.deserialize(in))!=""){
                 refs.add(ref.substring(0,40));
+                refsHashMap.put(ref.substring(41), ref.substring(0,40));
+                System.out.printf("Key: %s\nValue: %s\n", ref.substring(41), ref.substring(0,40));
             }
             in.close();
 
@@ -60,6 +63,22 @@ public class CloneCommand {
                 TreeObject tree = new TreeObject(repo, treeHash);
                 checkOut(tree, Path.of(repo));
             }
+
+            for(Map.Entry<String,String>refHash: refsHashMap.entrySet()){
+                Path refFileName = Path.of(repo, ".git", refHash.getKey());
+                if(!Files.exists(refFileName)){
+                    final Path tmp = refFileName.getParent();
+
+                    if (tmp != null) // null will be returned if the path has no parent
+                        Files.createDirectories(tmp);
+                    Files.createFile(refFileName);
+                }
+//        System.out.println(String.valueOf(obj));
+                FileOutputStream out = new FileOutputStream(refFileName.toFile());
+                out.write(refHash.getValue().getBytes());
+                out.close();
+            }
+
         }
         catch (Exception f){
             f.printStackTrace();

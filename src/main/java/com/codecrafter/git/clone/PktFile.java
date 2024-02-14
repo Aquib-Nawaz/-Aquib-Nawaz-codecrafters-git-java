@@ -88,7 +88,7 @@ public class PktFile {
             len += (long)(val&127)<<(4 + iter*7);
             iter++;
         }
-        System.out.println();
+//        System.out.println();
         return new ObjInfo(type, len, iter+1);
     }
     public static void parsePackfile(InputStream in, String repo) throws IOException{
@@ -107,7 +107,7 @@ public class PktFile {
         offset += 4;
         long numObject = bigEndian(parsedContent, offset);
         offset += 4;
-        System.out.printf("debug:- %d %d\n", version, numObject);
+        System.out.printf("debug:- version %d numObject %d\n", version, numObject);
 
         GitObjects curObj = null;
         List<DeltaObject> retObjList = new ArrayList<>();

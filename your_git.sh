@@ -6,5 +6,5 @@
 #
 # DON'T EDIT THIS!
 set -e
-mvn -B --quiet package -Ddir=/tmp/codecrafters-git-target
+mvn -B -f /Users/az/Documents/codecrafters-git-java/ --quiet package -Ddir=/tmp/codecrafters-git-target
 exec java -jar /tmp/codecrafters-git-target/java_git.jar "$@"
